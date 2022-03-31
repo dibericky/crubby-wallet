@@ -1,4 +1,5 @@
 use crate::fetch_api::{MonthlyRow};
+use markdown_table::MarkdownTable;
 
 fn get_positive_negative (rows: &Vec<MonthlyRow>) -> (Vec<&MonthlyRow>, Vec<&MonthlyRow>) {
     let mut positives : Vec<&MonthlyRow> = vec![];
@@ -23,7 +24,7 @@ pub struct Overview {
 }
 
 impl Overview {
-    pub fn calculate(rows: &Vec<MonthlyRow>) -> Overview {
+    pub fn new(rows: &Vec<MonthlyRow>) -> Overview {
         let (pos, neg) = get_positive_negative(rows);
         let sum_pos = pos.iter()
             .map(|item| item.monthly_value)
@@ -38,5 +39,18 @@ impl Overview {
             gain: sum_pos - sum_loss,
             saved_percentage: (1.0 - sum_loss/sum_pos)*100.0
         }
+    }
+
+    pub fn as_markdown(&self) -> String {
+        let overview = self;
+        let salary = overview.salary.to_string();
+        let loss = overview.loss.to_string();
+        let gain = overview.gain.to_string();
+        let saved_percentage = overview.saved_percentage.to_string();
+        let table = vec![
+            vec!["Salary".to_owned(), "Loss".to_owned(), "Gain".to_owned(), "%Saved".to_owned()],
+            vec![salary, loss, gain, saved_percentage]
+        ];
+        MarkdownTable::new(table).as_markdown().unwrap()
     }
 }
